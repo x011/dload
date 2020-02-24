@@ -145,7 +145,7 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         Download and save a remote file
         :param url: str - file url to download
         :param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
-        Defaults to script location and url filename. http, https and ftp schemes supported
+        Defaults to script location and url filename.
         :return: str - The full path of the downloaded file
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
