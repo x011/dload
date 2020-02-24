@@ -153,7 +153,7 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         :param url_list: str or list - A python list or a path to a text file containing the urls to be downloaded
         :param dir: str - Directory to save the files, will be created if it doesn't exist
         :param max_threads: int - Max number of parallel downloads
-        :param tsleep: int - time to sleep in seconds when the max_threads value is reached
+        :param tsleep: int or float - time to sleep in seconds when the max_threads value is reached, i.e: 0.05 or 1 is accepted
         :return: boolean
     
     save_unzip(zip_url, extract_path='', delete_after=False)
