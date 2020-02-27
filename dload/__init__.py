@@ -56,12 +56,13 @@ def rand_fn():
 	"""
 	return str(int(time.time()))[:5]
 
-def save(url, path=""):
+def save(url, path="", overwrite=True):
 	"""
 	Download and save a remote file
 	:param url: str - file url to download
 	:param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
 	Defaults to script location and url filename
+	:param overwrite: bool - If False and the file exists the download is skipped
 	:return: str - The full path of the downloaded file
 	"""
 
@@ -70,8 +71,10 @@ def save(url, path=""):
 		c_path = os.path.dirname(namespace['__file__'])
 		fn = os.path.basename(urlparse(url).path)
 		fn = fn if fn else f"dload{rand_fn()}"
-		r = requests.get(url)
 		path = path if path.strip() else c_path+os.path.sep+fn
+		if not overwrite and os.path.isfile(path):
+			return path
+		r = requests.get(url)
 		with open(path, 'wb') as f:
 			f.write(r.content)
 		return path

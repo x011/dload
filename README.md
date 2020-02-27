@@ -141,11 +141,12 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         provides a random filename when it's impossible to determine the filename, i.e.: http://site.tld/dir/
         :return: str
     
-    save(url, path='')
+    save(url, path='', overwrite=True)
         Download and save a remote file
         :param url: str - file url to download
         :param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
         Defaults to script location and url filename.
+        :param overwrite: bool - If False and the file exists the download is skipped
         :return: str - The full path of the downloaded file
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)

@@ -16,7 +16,7 @@ setuptools.setup(
 
 	name='dload',
 
-	version='0.3',
+	version='0.4',
 
 	#scripts=['pyupdown', "__init__.py"],
 
