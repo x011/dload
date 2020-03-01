@@ -1,5 +1,5 @@
 """
-dload - Download Library v0.4
+dload - Download Library
 
 A python library to simplify your download tasks.
 ~~~~~~~~~~~~~~~~~~~~~
