@@ -108,11 +108,6 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         :param url: str - url to download
         :return: bytes
     
-    check_installation(rv)
-        checks if current python version is correct to run this module
-        :param rv: string - python version, i.e. check_installation(36)
-        :return: boolean
-    
     down_speed(size=5, ipv='ipv4', port=80)
         Measures the download speed
         :param size: int -  5, 10, 20, 50, 100, 200, 512, 1024 Mb
@@ -120,10 +115,11 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         :param port: int - 80, 81, 8080
         :return: boolean
     
-    ftp(ftp_url, localpath='')
+    ftp(ftp_url, localpath='', overwrite=False)
         Download and save an FTP file
         :param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
         :param localpath: str - local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
+        :param overwrite: bool - If True the local file will be overwritten, False will skip the download
         :return: str - local path of the downloaded file
     
     headers(url, redirect=True)
@@ -141,13 +137,13 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         provides a random filename when it's impossible to determine the filename, i.e.: http://site.tld/dir/
         :return: str
     
-    save(url, path='', overwrite=True)
+    save(url, path='', overwrite=False)
         Download and save a remote file
         :param url: str - file url to download
         :param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
-        Defaults to script location and url filename.
-        :param overwrite: bool - If False and the file exists the download is skipped
-        :return: str - The full path of the downloaded file
+        Defaults to script location and url filename
+        :param overwrite: bool - If True the local file will be overwritten, False will skip the download
+        :return: str - The full path of the downloaded file or an empty string
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
         Multi threaded file downloader

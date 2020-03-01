@@ -14,7 +14,7 @@ import zipfile
 def check_installation(rv):
 	"""
 	checks if current python version is correct to run this module
-	:param rv: string - python version, i.e. check_installation(36)
+	:param rv: string - python version, i.e. check_installation("36")
 	:return: boolean
 	"""
 	current_version = sys.version_info
@@ -56,14 +56,14 @@ def rand_fn():
 	"""
 	return str(int(time.time()))[:5]
 
-def save(url, path="", overwrite=True):
+def save(url, path="", overwrite=False):
 	"""
 	Download and save a remote file
 	:param url: str - file url to download
 	:param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
 	Defaults to script location and url filename
-	:param overwrite: bool - If False and the file exists the download is skipped
-	:return: str - The full path of the downloaded file
+	:param overwrite: bool - If True the local file will be overwritten, False will skip the download
+	:return: str - The full path of the downloaded file or an empty string
 	"""
 
 	try:
@@ -129,11 +129,12 @@ def headers(url, redirect=True):
 		return {}
 
 
-def ftp(ftp_url, localpath=""):
+def ftp(ftp_url, localpath="", overwrite=False):
 	"""
 	Download and save an FTP file
 	:param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
 	:param localpath: str - local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
+	:param overwrite: bool - If True the local file will be overwritten, False will skip the download
 	:return: str - local path of the downloaded file
 	"""
 
@@ -143,6 +144,8 @@ def ftp(ftp_url, localpath=""):
 		fn = os.path.basename(urlparse(ftp_url).path)
 		fn = fn if fn else f"dload{rand_fn()}"
 		localpath = localpath if localpath.strip() else c_path+os.path.sep+fn
+		if not overwrite and os.path.isfile(path):
+			return path
 		with closing(request.urlopen(ftp_url)) as r:
 			with open(localpath, 'wb') as f:
 				copyfileobj(r, f)
