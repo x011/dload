@@ -108,28 +108,28 @@ dload.git_clone("https://github.com/x011/dload.git")
     
     down_speed(size=5, ipv='ipv4', port=80)
         Measures the download speed
-        :param size: int -  5, 10, 20, 50, 100, 200, 512, 1024 Mb
-        :param ipv: str - ipv4, ipv6
-        :param port: int - 80, 81, 8080
+        :param size: int -  (optional) 5, 10, 20, 50, 100, 200, 512, 1024 Mb
+        :param ipv: str - (optional) ipv4, ipv6
+        :param port: int - (optional) 80, 81, 8080
         :return: boolean
     
-    ftp(ftp_url, localpath='', overwrite=False) 
+    ftp(ftp_url, local_path='', overwrite=False)
         Download and save an FTP file
         :param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
-        :param localpath: str - local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
-        :param overwrite: bool - If True the local file will be overwritten, False will skip the download
+        :param localpath: str - (optional) local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
+        :param overwrite: bool - (optional) If True the local file will be overwritten, False will skip the download
         :return: str - local path of the downloaded file
     
     git_clone(git_url, clone_dir='')
         Clones a git repo to local computer
         :param git_url: str - git url, ex: https://github.com/x011/dload.git
-        :param clone_dir: str - Optional, local dir to clone the git, ex: /path/to/dload/ or c:/repos/dload/, defaults to repo name on script dir
+        :param clone_dir: str - (optional) local dir to clone the git, ex: /path/to/dload/ or c:/repos/dload/, defaults to repo name on script dir
         :return: str - path to local repo dir or an empty tring
     
     headers(url, redirect=True)
         Returns the reply headers as a dict
         :param url: str - url to retrieve the reply headers
-        :param redirect: boolean - should we follow redirects?
+        :param redirect: boolean - (optional) should we follow redirects?
         :return: dict
     
     json(url)
@@ -144,28 +144,28 @@ dload.git_clone("https://github.com/x011/dload.git")
     save(url, path='', overwrite=False)
         Download and save a remote file
         :param url: str - file url to download
-        :param path: str - Full path to save the file, ex: c:/test.txt or /home/test.txt.
+        :param path: str - (optional) Full path to save the file, ex: c:/test.txt or /home/test.txt.
         Defaults to script location and url filename
-        :param overwrite: bool - If True the local file will be overwritten, False will skip the download
+        :param overwrite: bool - (optional)  If True the local file will be overwritten, False will skip the download
         :return: str - The full path of the downloaded file or an empty string
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
         Multi threaded file downloader
         :param url_list: str or list - A python list or a path to a text file containing the urls to be downloaded
-        :param dir: str - Directory to save the files, will be created if it doesn't exist
-        :param max_threads: int - Max number of parallel downloads
-        :param tsleep: int or float - time to sleep in seconds when the max_threads value is reached, i.e: 0.05 or 1 is accepted
+        :param dir: str - (optional) Directory to save the files, will be created if it doesn't exist
+        :param max_threads: int - (optional)  Max number of parallel downloads
+        :param tsleep: int or float - (optional)  time to sleep in seconds when the max_threads value is reached, i.e: 0.05 or 1 is accepted
         :return: boolean
     
     save_unzip(zip_url, extract_path='', delete_after=False)
         Save and Extract a remote zip
-        :param zip_url: the zip file url to download
-        :param extract_path: the path to extract the zip file, defaults to local dir
-        :param delete_after: if the zip file should be deleted after, defaults to False
-        :return: str the extract path or an empty string
+        :param zip_url: str - the zip file url to download
+        :param extract_path: str - (optional) the path to extract the zip file, defaults to local dir
+        :param delete_after: bool - (optional) if the zip file should be deleted after, defaults to False
+        :return: str - the extract path or an empty string
     
     text(url, encoding='')
         Returns the remote file as a string
         :param url: str - url to retrieve the text content
-        :param encoding: str - character encoding
+        :param encoding: str - (optional) character encoding
         :return: str
