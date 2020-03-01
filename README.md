@@ -115,7 +115,7 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         :param port: int - 80, 81, 8080
         :return: boolean
     
-    ftp(ftp_url, localpath='', overwrite=False)
+    ftp(ftp_url, localpath='', overwrite=False) 
         Download and save an FTP file
         :param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
         :param localpath: str - local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
