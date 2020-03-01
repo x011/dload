@@ -94,6 +94,11 @@ dload.speed_test(1024, port=8080)
 dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.zip")
 ```
 
+#### Clone a git repo to local computer
+```
+dload.git_clone("https://github.com/x011/dload.git")
+```
+
 ### FUNCTIONS
 
     bytes(url)
@@ -114,6 +119,12 @@ dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.z
         :param localpath: str - local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
         :param overwrite: bool - If True the local file will be overwritten, False will skip the download
         :return: str - local path of the downloaded file
+    
+    git_clone(git_url, clone_dir='')
+        Clones a git repo to local computer
+        :param git_url: str - git url, ex: https://github.com/x011/dload.git
+        :param clone_dir: str - Optional, local dir to clone the git, ex: /path/to/dload/ or c:/repos/dload/, defaults to repo name on script dir
+        :return: str - path to local repo dir or an empty tring
     
     headers(url, redirect=True)
         Returns the reply headers as a dict

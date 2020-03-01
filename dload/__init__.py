@@ -6,6 +6,7 @@ A python library to simplify your download tasks.
 """
 
 import os, sys, time
+import re
 from contextlib import closing
 from shutil import copyfileobj
 import urllib.request as request
@@ -129,7 +130,7 @@ def headers(url, redirect=True):
 		return {}
 
 
-def ftp(ftp_url, localpath="", overwrite=False):
+def ftp(ftp_url, local_path="", overwrite=False):
 	"""
 	Download and save an FTP file
 	:param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
@@ -143,13 +144,13 @@ def ftp(ftp_url, localpath="", overwrite=False):
 		c_path = os.path.dirname(namespace['__file__'])
 		fn = os.path.basename(urlparse(ftp_url).path)
 		fn = fn if fn else f"dload{rand_fn()}"
-		localpath = localpath if localpath.strip() else c_path+os.path.sep+fn
-		if not overwrite and os.path.isfile(path):
-			return path
+		local_path = local_path if local_path.strip() else c_path+os.path.sep+fn
+		if not overwrite and os.path.isfile(local_path):
+			return local_path
 		with closing(request.urlopen(ftp_url)) as r:
-			with open(localpath, 'wb') as f:
+			with open(local_path, 'wb') as f:
 				copyfileobj(r, f)
-				return localpath
+				return local_path
 	except:
 		print(traceback.print_exc())
 		pass
@@ -239,10 +240,10 @@ def down_speed(size=5, ipv="ipv4", port=80):
 def save_unzip(zip_url, extract_path="", delete_after=False):
 	"""
 	Save and Extract a remote zip
-	:param zip_url: the zip file url to download
-	:param extract_path: the path to extract the zip file, defaults to local dir
-	:param delete_after: if the zip file should be deleted after, defaults to False
-	:return: str the extract path or an empty string
+	:param zip_url: str - the zip file url to download
+	:param extract_path: str - the path to extract the zip file, defaults to local dir
+	:param delete_after: bool - if the zip file should be deleted after, defaults to False
+	:return: str - the extract path or an empty string
 	"""
 	try:
 		namespace = sys._getframe(1).f_globals  # caller's globals
@@ -261,3 +262,36 @@ def save_unzip(zip_url, extract_path="", delete_after=False):
 		pass
 		print(traceback.print_exc())
 	return ""
+
+
+def git_clone(git_url, clone_dir=""):
+	"""
+	Clones a git repo to local computer
+	:param git_url: str - git url, ex: https://github.com/x011/dload.git
+	:param clone_dir: str - Optional, local dir to clone the git, ex: /path/to/dload/ or c:/repos/dload/, defaults to repo name on script dir
+	:return: str - path to local repo dir or an empty tring
+	"""
+	git_url = git_url.strip()
+	if not git_url.lower().endswith(".git"):
+		print("Invalid git_url")
+		return ""
+	try:
+		repo_name =  re.sub("\.git$", "", git_url, 0, re.IGNORECASE | re.MULTILINE)
+		repo_zip = repo_name + "/archive/master.zip"
+		if not clone_dir:
+			repo_name = repo_name.split("/")[-1]
+			namespace = sys._getframe(1).f_globals  # caller's globals
+			c_path = os.path.dirname(namespace['__file__'])
+			folder = os.path.splitext(c_path)[0]
+			clone_dir = f"{folder}/{repo_name}"
+		else:
+			if not re.search(r"/|\\$", clone_dir, re.IGNORECASE | re.MULTILINE):
+				print("Invalid clone_dir")
+				return ""
+		if os.path.isfile("master.zip"):
+			os.remove("master.zip")
+		return save_unzip(repo_zip, clone_dir, delete_after=True)
+	except:
+		pass
+		print(traceback.print_exc())
+		return ""
