@@ -43,19 +43,17 @@ dload.bytes('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Ei
 dload.json("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json")
 ```
 
-#### Returns the request reply headers as a dict:
+#### Returns the server reply headers as a dict:
 ```
 dload.headers("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json")
 ```
 
 #### Returns the remote file as a string:
-
 ```
-dload.text("https://www.w3.org/TR/PNG/iso_8859-1.txt" )
+dload.text("https://www.w3.org/TR/PNG/iso_8859-1.txt")
 ```
 
 #### Multi threaded downloader from a python list
-
 ```
 file_list = ["https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-i386-pc-solaris2.8.tar.gz",
              "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-i386-unknown-netbsdelf1.6.tar.bz2",
@@ -74,15 +72,13 @@ save_multi(file_list, "d:/test_dowmload/", max_threads=10)
 
 
 #### Multi threaded downloader from a text file
-
 ```
-file_list = "C:/Users/0x/Desktop/python_3/dload/examples/file_list.txt"
-save_multi(file_list, "d:/test_dowmload_text/", max_threads=10)
+file_list = "d:/file_list.txt"
+save_multi(file_list, "d:/test_download_text/", max_threads=10)
 ```
 
 
 #### Download Speed Test
-
 ```
 dload.speed_test()
 dload.speed_test(10)
@@ -94,7 +90,6 @@ dload.speed_test(1024, port=8080)
 ```
 
 #### Save and Extract a remote zip
-
 ```
 dload.save_unzip("https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.zip")
 ```
