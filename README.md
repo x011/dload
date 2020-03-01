@@ -30,8 +30,7 @@ dload.save('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Ein
 
 #### Download and save an FTP file:
 ```
-dload.ftp('ftp://speedtest.tele2.net/5MB.zip', '~/5MB.zip')  
-
+dload.ftp('ftp://speedtest.tele2.net/5MB.zip', '~/5MB.zip') 
 ```
 
 #### Returns the remote file as a byte obj:
@@ -39,15 +38,14 @@ dload.ftp('ftp://speedtest.tele2.net/5MB.zip', '~/5MB.zip')
 dload.bytes('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/800px-Albert_Einstein_Head.jpg')
 ```
 
-
 #### Returns the remote file as a dict:
 ```
-dload.json("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json" )
+dload.json("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json")
 ```
 
 #### Returns the request reply headers as a dict:
 ```
-dload.headers("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json" )
+dload.headers("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json")
 ```
 
 #### Returns the remote file as a string:
