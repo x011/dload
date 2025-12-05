@@ -67,3 +67,24 @@ class SaveTests(TestCase):
             self.assertTrue(os.path.isdir(extract_path))
             with open(os.path.join(extract_path, "file.txt")) as file_handle:
                 self.assertEqual(file_handle.read(), "content")
+
+    def test_save_uses_cwd_when_caller_has_no_file_namespace(self):
+        url = "http://example.com/download/file.bin"
+        response = DummyResponse(b"payload")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with mock.patch("dload._get_caller_namespace", return_value={}), mock.patch(
+                "dload.os.getcwd", return_value=tmp_dir
+            ), mock.patch("dload.requests.get", return_value=response):
+                saved_path = dload.save(url, overwrite=True)
+
+            expected_path = os.path.join(tmp_dir, os.path.basename(url))
+            self.assertEqual(saved_path, expected_path)
+            with open(saved_path, "rb") as file_handle:
+                self.assertEqual(file_handle.read(), b"payload")
+
+    def test_get_caller_dir_prefers_ipython_working_directory(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            namespace = {"_dh": [tmp_dir]}
+            caller_dir = dload._get_caller_dir(namespace)
+            self.assertEqual(caller_dir, tmp_dir)

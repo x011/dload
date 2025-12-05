@@ -50,8 +50,17 @@ check_installation("36")
 def _get_caller_dir(namespace: Optional[dict]) -> str:
     """Resolve a caller's directory, falling back to the current working directory."""
 
-    if namespace and "__file__" in namespace:
-        return os.path.dirname(os.path.abspath(namespace["__file__"]))
+    if namespace:
+        if "__file__" in namespace and namespace["__file__"]:
+            return os.path.dirname(os.path.abspath(namespace["__file__"]))
+
+        # ``_dh`` is set by IPython/Colab to track the current working directory.
+        ipython_dirs = namespace.get("_dh")
+        if isinstance(ipython_dirs, (list, tuple)) and ipython_dirs:
+            first_dir = ipython_dirs[0]
+            if isinstance(first_dir, str) and first_dir:
+                return os.path.abspath(first_dir)
+
     return os.getcwd()
 
 
