@@ -148,6 +148,8 @@ dload.git_clone("https://github.com/x011/dload.git")
         Defaults to script location and url filename
         :param overwrite: bool - (optional)  If True the local file will be overwritten, False will skip the download
         :param chunk_size: int - (optional) streaming chunk size in bytes for writing to disk
+        :param raise_on_error: bool - (optional) If True re-raises download errors instead
+        of returning an empty string
         :return: str - The full path of the downloaded file or an empty string
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
