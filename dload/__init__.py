@@ -90,6 +90,7 @@ def save(
     overwrite: bool = False,
     timeout: int = DEFAULT_TIMEOUT,
     chunk_size: int = 8192,
+    raise_on_error: bool = False,
 ) -> str:
     """
     Download and save a remote file.
@@ -101,6 +102,8 @@ def save(
         will skip the download if the file already exists.
     :param timeout: Optional request timeout in seconds.
     :param chunk_size: Optional size (in bytes) of streaming chunks written to disk.
+    :param raise_on_error: If ``True`` re-raises download errors instead of returning
+        an empty string.
     :return: The full path of the downloaded file or an empty string.
     """
 
@@ -123,6 +126,8 @@ def save(
                         file_handle.write(chunk)
         return destination
     except (OSError, requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return ""
 
 
