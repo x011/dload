@@ -84,7 +84,13 @@ def rand_fn() -> str:
     return str(int(time.time()))[:5]
 
 
-def save(url: str, path: str = "", overwrite: bool = False, timeout: int = DEFAULT_TIMEOUT) -> str:
+def save(
+    url: str,
+    path: str = "",
+    overwrite: bool = False,
+    timeout: int = DEFAULT_TIMEOUT,
+    chunk_size: int = 8192,
+) -> str:
     """
     Download and save a remote file.
 
@@ -94,6 +100,7 @@ def save(url: str, path: str = "", overwrite: bool = False, timeout: int = DEFAU
     :param overwrite: If ``True`` the local file will be overwritten; ``False``
         will skip the download if the file already exists.
     :param timeout: Optional request timeout in seconds.
+    :param chunk_size: Optional size (in bytes) of streaming chunks written to disk.
     :return: The full path of the downloaded file or an empty string.
     """
 
@@ -108,10 +115,12 @@ def save(url: str, path: str = "", overwrite: bool = False, timeout: int = DEFAU
             return destination
 
         os.makedirs(os.path.dirname(destination), exist_ok=True)
-        response = requests.get(url, timeout=timeout)
-        response.raise_for_status()
-        with open(destination, "wb") as file_handle:
-            file_handle.write(response.content)
+        with requests.get(url, stream=True, timeout=timeout) as response:
+            response.raise_for_status()
+            with open(destination, "wb") as file_handle:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        file_handle.write(chunk)
         return destination
     except (OSError, requests.RequestException, ValueError):
         return ""

@@ -141,12 +141,13 @@ dload.git_clone("https://github.com/x011/dload.git")
         provides a random filename when it's impossible to determine the filename, i.e.: http://site.tld/dir/
         :return: str
     
-    save(url, path='', overwrite=False)
+    save(url, path='', overwrite=False, timeout=30, chunk_size=8192)
         Download and save a remote file
         :param url: str - file url to download
         :param path: str - (optional) Full path to save the file, ex: c:/test.txt or /home/test.txt.
         Defaults to script location and url filename
         :param overwrite: bool - (optional)  If True the local file will be overwritten, False will skip the download
+        :param chunk_size: int - (optional) streaming chunk size in bytes for writing to disk
         :return: str - The full path of the downloaded file or an empty string
     
     save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
