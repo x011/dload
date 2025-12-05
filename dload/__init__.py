@@ -11,11 +11,12 @@ import re
 import sys
 import time
 import zipfile
+from cgi import parse_header
 from contextlib import closing
 from shutil import copyfileobj
 from typing import Iterable, List, Optional
 from urllib import request
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import requests
 
@@ -57,6 +58,47 @@ def _get_caller_dir(namespace: Optional[dict]) -> str:
 def _default_filename(url: str) -> str:
     filename = os.path.basename(urlparse(url).path)
     return filename if filename else f"dload{rand_fn()}"
+
+
+def _get_caller_namespace() -> Optional[dict]:
+    """Retrieve the calling frame's globals, skipping internal wrappers when needed."""
+
+    try:
+        caller_frame = sys._getframe(1)
+        namespace = caller_frame.f_globals if caller_frame else None
+        if (
+            namespace
+            and namespace.get("__name__") == __name__
+            and sys._getframe(2) is not None
+        ):
+            namespace = sys._getframe(2).f_globals
+        return namespace
+    except ValueError:
+        return None
+
+
+def _header_filename(content_disposition: Optional[str]) -> str:
+    """Extract and sanitize a filename from a Content-Disposition header."""
+
+    if not content_disposition:
+        return ""
+
+    try:
+        _, params = parse_header(content_disposition)
+    except (ValueError, TypeError):
+        return ""
+
+    filename = params.get("filename*")
+    if filename and "''" in filename:
+        _, _, filename = filename.partition("''")
+    if not filename:
+        filename = params.get("filename")
+
+    if not filename:
+        return ""
+
+    filename = unquote(filename.strip().strip("\"'"))
+    return os.path.basename(filename)
 
 
 def bytes(url: str, timeout: int = DEFAULT_TIMEOUT) -> bytes:
@@ -108,18 +150,29 @@ def save(
     """
 
     try:
-        namespace = sys._getframe(1).f_globals if sys._getframe(1) else None
+        namespace = _get_caller_namespace()
         base_path = _get_caller_dir(namespace)
-        filename = _default_filename(url)
-        destination = path.strip() or os.path.join(base_path, filename)
-        destination = os.path.abspath(os.path.expanduser(destination))
+        provided_path = path.strip()
+        destination: Optional[str] = None
 
-        if not overwrite and os.path.isfile(destination):
-            return destination
+        if provided_path:
+            destination = os.path.abspath(os.path.expanduser(provided_path))
+            if not overwrite and os.path.isfile(destination):
+                return destination
 
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
         with requests.get(url, stream=True, timeout=timeout) as response:
             response.raise_for_status()
+
+            if not destination:
+                header_filename = _header_filename(
+                    response.headers.get("content-disposition")
+                )
+                filename = header_filename or _default_filename(url)
+                destination = os.path.abspath(os.path.join(base_path, filename))
+                if not overwrite and os.path.isfile(destination):
+                    return destination
+
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
             with open(destination, "wb") as file_handle:
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
@@ -343,12 +396,11 @@ def save_unzip(zip_url: str, extract_path: str = "", delete_after: bool = False)
     try:
         namespace = sys._getframe(1).f_globals if sys._getframe(1) else None
         base_path = _get_caller_dir(namespace)
-        filename = _default_filename(zip_url)
-        zip_path = save(zip_url, os.path.join(base_path, filename), overwrite=True)
+        zip_path = save(zip_url, overwrite=True)
         if not zip_path:
             return ""
 
-        folder = os.path.splitext(os.path.basename(filename))[0]
+        folder = os.path.splitext(os.path.basename(zip_path))[0]
         destination = extract_path.strip() or os.path.join(base_path, folder)
         destination = os.path.abspath(os.path.expanduser(destination))
 
