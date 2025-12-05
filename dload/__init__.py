@@ -416,7 +416,7 @@ def save_unzip(zip_url: str, extract_path: str = "", delete_after: bool = False)
 
 def git_clone(git_url: str, clone_dir: str = "") -> str:
     """
-    Clone a git repository by downloading its master branch zip archive.
+    Clone a git repository by downloading its default branch zip archive.
 
     :param git_url: Git URL, e.g. ``https://github.com/x011/dload.git``.
     :param clone_dir: Local directory to extract into; defaults to the caller directory
@@ -430,7 +430,9 @@ def git_clone(git_url: str, clone_dir: str = "") -> str:
 
     try:
         repo_name = re.sub(r"\.git$", "", git_url, 0, re.IGNORECASE | re.MULTILINE)
-        repo_zip = f"{repo_name}/archive/master.zip"
+        default_branch = _github_default_branch(repo_name) or "master"
+        repo_zip = f"{repo_name}/archive/refs/heads/{default_branch}.zip"
+        archive_filename = os.path.basename(urlparse(repo_zip).path)
 
         if not clone_dir:
             namespace = sys._getframe(1).f_globals if sys._getframe(1) else None
@@ -441,9 +443,37 @@ def git_clone(git_url: str, clone_dir: str = "") -> str:
             if not re.search(r"/|\\$", clone_dir, re.IGNORECASE | re.MULTILINE):
                 return ""
 
-        if os.path.isfile("master.zip"):
-            os.remove("master.zip")
+        if archive_filename and os.path.isfile(archive_filename):
+            os.remove(archive_filename)
 
         return save_unzip(repo_zip, clone_dir, delete_after=True)
     except (OSError, ValueError):
         return ""
+
+
+def _github_default_branch(repo_name: str) -> Optional[str]:
+    """Return the default branch name for a GitHub repository when possible."""
+
+    parsed_url = urlparse(repo_name)
+    if parsed_url.netloc.lower() != "github.com":
+        return None
+
+    path_parts = parsed_url.path.strip("/").split("/")
+    if len(path_parts) < 2:
+        return None
+
+    repo_path = "/".join(path_parts[:2])
+    api_url = f"https://api.github.com/repos/{repo_path}"
+
+    try:
+        response = requests.get(api_url, timeout=DEFAULT_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        if isinstance(data, dict):
+            default_branch = data.get("default_branch")
+            if isinstance(default_branch, str) and default_branch.strip():
+                return default_branch.strip()
+    except requests.RequestException:
+        return None
+
+    return None
