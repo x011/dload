@@ -101,47 +101,53 @@ dload.git_clone("https://github.com/x011/dload.git")
 
 ### FUNCTIONS
 
-    bytes(url)
+    bytes(url, raise_on_error=True)
         Returns the remote file as a byte obj
         :param url: str - url to download
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns b"" on failure
         :return: bytes
     
-    down_speed(size=5, ipv='ipv4', port=80)
+    down_speed(size=5, ipv='ipv4', port=80, raise_on_error=True)
         Measures the download speed
         :param size: int -  (optional) 5, 10, 20, 50, 100, 200, 512, 1024 Mb
         :param ipv: str - (optional) ipv4, ipv6
         :param port: int - (optional) 80, 81, 8080
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns False
         :return: boolean
     
-    ftp(ftp_url, local_path='', overwrite=False)
+    ftp(ftp_url, local_path='', overwrite=False, raise_on_error=True)
         Download and save an FTP file
         :param url: str - ftp://ftp.server.tld/path/to/file.ext or ftp://username:password@ftp.server.tld/path/to/file.ext
         :param localpath: str - (optional) local path to save the file, i.e.: /home/myfile.ext or c:/myfile.ext
         :param overwrite: bool - (optional) If True the local file will be overwritten, False will skip the download
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns an empty string
         :return: str - local path of the downloaded file
     
-    git_clone(git_url, clone_dir='')
+    git_clone(git_url, clone_dir='', raise_on_error=True)
         Clones a git repo to local computer
         :param git_url: str - git url, ex: https://github.com/x011/dload.git
         :param clone_dir: str - (optional) local dir to clone the git, ex: /path/to/dload/ or c:/repos/dload/, defaults to repo name on script dir
-        :return: str - path to local repo dir or an empty tring
+        :param raise_on_error: bool - (optional) If True re-raises download or extraction errors; otherwise returns an empty string
+        :return: str - path to local repo dir or an empty string
     
-    headers(url, redirect=True)
+    headers(url, redirect=True, raise_on_error=True)
         Returns the reply headers as a dict
         :param url: str - url to retrieve the reply headers
         :param redirect: boolean - (optional) should we follow redirects?
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns an empty dict
         :return: dict
-    
-    json(url)
+
+    json(url, raise_on_error=True)
         Returns the remote file as a dict
         :param url: str - url to retrieve the json
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns an empty dict
         :return: dict
     
     rand_fn()
         provides a random filename when it's impossible to determine the filename, i.e.: http://site.tld/dir/
         :return: str
     
-    save(url, path='', overwrite=False, timeout=30, chunk_size=8192)
+    save(url, path='', overwrite=False, timeout=30, chunk_size=8192, raise_on_error=True)
         Download and save a remote file
         :param url: str - file url to download
         :param path: str - (optional) Full path to save the file, ex: c:/test.txt or /home/test.txt.
@@ -151,24 +157,27 @@ dload.git_clone("https://github.com/x011/dload.git")
         :param raise_on_error: bool - (optional) If True re-raises download errors instead
         of returning an empty string
         :return: str - The full path of the downloaded file or an empty string
-    
-    save_multi(url_list, dir='', max_threads=1, tsleep=0.05)
+
+    save_multi(url_list, dir='', max_threads=1, tsleep=0.05, raise_on_error=True)
         Multi threaded file downloader
         :param url_list: str or list - A python list or a path to a text file containing the urls to be downloaded
         :param dir: str - (optional) Directory to save the files, will be created if it doesn't exist
         :param max_threads: int - (optional)  Max number of parallel downloads
         :param tsleep: int or float - (optional)  time to sleep in seconds when the max_threads value is reached, i.e: 0.05 or 1 is accepted
+        :param raise_on_error: bool - (optional) If True re-raises the first download error; otherwise returns False when a download fails
         :return: boolean
-    
-    save_unzip(zip_url, extract_path='', delete_after=False)
+
+    save_unzip(zip_url, extract_path='', delete_after=False, raise_on_error=True)
         Save and Extract a remote zip
         :param zip_url: str - the zip file url to download
         :param extract_path: str - (optional) the path to extract the zip file, defaults to local dir
         :param delete_after: bool - (optional) if the zip file should be deleted after, defaults to False
+        :param raise_on_error: bool - (optional) If True re-raises download/extract errors; otherwise returns an empty string
         :return: str - the extract path or an empty string
-    
-    text(url, encoding='')
+
+    text(url, encoding='', raise_on_error=True)
         Returns the remote file as a string
         :param url: str - url to retrieve the text content
         :param encoding: str - (optional) character encoding
+        :param raise_on_error: bool - (optional) If True re-raises download errors; otherwise returns an empty string
         :return: str

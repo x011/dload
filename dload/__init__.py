@@ -110,13 +110,20 @@ def _header_filename(content_disposition: Optional[str]) -> str:
     return os.path.basename(filename)
 
 
-def bytes(url: str, timeout: int = DEFAULT_TIMEOUT) -> bytes:
+def bytes(
+    url: str,
+    timeout: int = DEFAULT_TIMEOUT,
+    raise_on_error: bool = True,
+) -> bytes:
     """
     Return the remote file as bytes.
 
     :param url: URL to download.
     :param timeout: Optional request timeout in seconds.
-    :return: Raw response content, or ``b""`` on failure.
+    :param raise_on_error: If ``True`` re-raises download errors; otherwise returns
+        ``b""`` on failure.
+    :return: Raw response content, or ``b""`` on failure when ``raise_on_error`` is
+        ``False``.
     """
 
     try:
@@ -124,6 +131,8 @@ def bytes(url: str, timeout: int = DEFAULT_TIMEOUT) -> bytes:
         response.raise_for_status()
         return response.content
     except (requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return b""
 
 
@@ -141,7 +150,7 @@ def save(
     overwrite: bool = False,
     timeout: int = DEFAULT_TIMEOUT,
     chunk_size: int = 8192,
-    raise_on_error: bool = False,
+    raise_on_error: bool = True,
 ) -> str:
     """
     Download and save a remote file.
@@ -155,7 +164,8 @@ def save(
     :param chunk_size: Optional size (in bytes) of streaming chunks written to disk.
     :param raise_on_error: If ``True`` re-raises download errors instead of returning
         an empty string.
-    :return: The full path of the downloaded file or an empty string.
+    :return: The full path of the downloaded file or an empty string when
+        ``raise_on_error`` is ``False``.
     """
 
     try:
@@ -193,14 +203,22 @@ def save(
         return ""
 
 
-def text(url: str, encoding: str = "", timeout: int = DEFAULT_TIMEOUT) -> str:
+def text(
+    url: str,
+    encoding: str = "",
+    timeout: int = DEFAULT_TIMEOUT,
+    raise_on_error: bool = True,
+) -> str:
     """
     Return the remote file content as a string.
 
     :param url: URL to retrieve.
     :param encoding: Optional character encoding.
     :param timeout: Optional request timeout in seconds.
-    :return: Response text or an empty string on failure.
+    :param raise_on_error: If ``True`` re-raises download errors; otherwise returns
+        an empty string on failure.
+    :return: Response text or an empty string on failure when ``raise_on_error`` is
+        ``False``.
     """
 
     try:
@@ -210,16 +228,21 @@ def text(url: str, encoding: str = "", timeout: int = DEFAULT_TIMEOUT) -> str:
             response.encoding = encoding
         return response.text
     except (requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return ""
 
 
-def json(url: str, timeout: int = DEFAULT_TIMEOUT):
+def json(url: str, timeout: int = DEFAULT_TIMEOUT, raise_on_error: bool = True):
     """
     Return the remote file as a dictionary.
 
     :param url: URL to retrieve the JSON content.
     :param timeout: Optional request timeout in seconds.
-    :return: Parsed JSON data or an empty ``dict`` on failure.
+    :param raise_on_error: If ``True`` re-raises download or parse errors; otherwise
+        returns an empty ``dict`` on failure.
+    :return: Parsed JSON data or an empty ``dict`` on failure when
+        ``raise_on_error`` is ``False``.
     """
 
     try:
@@ -227,16 +250,25 @@ def json(url: str, timeout: int = DEFAULT_TIMEOUT):
         response.raise_for_status()
         return response.json()
     except (requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return {}
 
 
-def headers(url: str, redirect: bool = True, timeout: int = DEFAULT_TIMEOUT) -> dict:
+def headers(
+    url: str,
+    redirect: bool = True,
+    timeout: int = DEFAULT_TIMEOUT,
+    raise_on_error: bool = True,
+) -> dict:
     """
     Return the reply headers as a dictionary.
 
     :param url: URL to retrieve the reply headers.
     :param redirect: Should redirects be followed.
     :param timeout: Optional request timeout in seconds.
+    :param raise_on_error: If ``True`` re-raises download errors; otherwise returns an
+        empty ``dict`` on failure.
     """
 
     try:
@@ -244,10 +276,18 @@ def headers(url: str, redirect: bool = True, timeout: int = DEFAULT_TIMEOUT) -> 
         response.raise_for_status()
         return dict(response.headers)
     except (requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return {}
 
 
-def ftp(ftp_url: str, local_path: str = "", overwrite: bool = False, timeout: int = DEFAULT_TIMEOUT) -> str:
+def ftp(
+    ftp_url: str,
+    local_path: str = "",
+    overwrite: bool = False,
+    timeout: int = DEFAULT_TIMEOUT,
+    raise_on_error: bool = True,
+) -> str:
     """
     Download and save an FTP file.
 
@@ -256,7 +296,10 @@ def ftp(ftp_url: str, local_path: str = "", overwrite: bool = False, timeout: in
     :param overwrite: If ``True`` the local file will be overwritten; ``False``
         will skip the download if the file already exists.
     :param timeout: Optional request timeout in seconds.
-    :return: Local path of the downloaded file or ``""`` on failure.
+    :param raise_on_error: If ``True`` re-raises download errors; otherwise returns
+        ``""`` on failure.
+    :return: Local path of the downloaded file or ``""`` on failure when
+        ``raise_on_error`` is ``False``.
     """
 
     try:
@@ -275,6 +318,8 @@ def ftp(ftp_url: str, local_path: str = "", overwrite: bool = False, timeout: in
                 copyfileobj(response, file_handle)
         return destination
     except (OSError, ValueError, request.URLError):
+        if raise_on_error:
+            raise
         return ""
 
 
@@ -284,6 +329,7 @@ def save_multi(
     max_threads: int = 1,
     tsleep: float = 0.05,
     timeout: int = DEFAULT_TIMEOUT,
+    raise_on_error: bool = True,
 ) -> bool:
     """
     Multi-threaded file downloader.
@@ -293,7 +339,10 @@ def save_multi(
     :param max_threads: Maximum number of parallel downloads.
     :param tsleep: Time (seconds) to wait between thread scheduling attempts.
     :param timeout: Optional request timeout in seconds.
-    :return: ``True`` when all downloads finish, otherwise ``False``.
+    :param raise_on_error: If ``True`` re-raises the first encountered download error;
+        otherwise returns ``False`` when any download fails.
+    :return: ``True`` when all downloads finish, otherwise ``False`` when
+        ``raise_on_error`` is ``False``.
     """
 
     import threading
@@ -316,9 +365,21 @@ def save_multi(
         semaphore = threading.Semaphore(max_threads if max_threads > 0 else 1)
         threads: List[threading.Thread] = []
 
+        exceptions: List[BaseException] = []
+        exception_lock = threading.Lock()
+
         def _download(target_url: str, destination_path: str) -> None:
             try:
-                save(target_url, destination_path, timeout=timeout, overwrite=False)
+                save(
+                    target_url,
+                    destination_path,
+                    timeout=timeout,
+                    overwrite=False,
+                    raise_on_error=raise_on_error,
+                )
+            except BaseException as error:  # noqa: BLE001
+                with exception_lock:
+                    exceptions.append(error)
             finally:
                 semaphore.release()
 
@@ -340,19 +401,34 @@ def save_multi(
         for thread in threads:
             thread.join()
 
+        if exceptions:
+            if raise_on_error:
+                raise exceptions[0]
+            return False
+
         return True
-    except (OSError, ValueError):
+    except (OSError, ValueError) as error:
+        if raise_on_error:
+            raise
         return False
 
 
-def down_speed(size: int = 5, ipv: str = "ipv4", port: int = 80) -> bool:
+def down_speed(
+    size: int = 5,
+    ipv: str = "ipv4",
+    port: int = 80,
+    raise_on_error: bool = True,
+) -> bool:
     """
     Measure download speed by retrieving a test file.
 
     :param size: Integer in megabytes (5, 10, 20, 50, 100, 200, 512, 1024).
     :param ipv: "ipv4" or "ipv6" host prefix.
     :param port: Port to use for the test URL.
-    :return: ``True`` when the test completes, otherwise ``False``.
+    :param raise_on_error: If ``True`` re-raises download errors; otherwise returns
+        ``False`` on failure.
+    :return: ``True`` when the test completes, otherwise ``False`` when
+        ``raise_on_error`` is ``False``.
     """
 
     if size == 1024:
@@ -389,23 +465,33 @@ def down_speed(size: int = 5, ipv: str = "ipv4", port: int = 80) -> bool:
             print(f"\n{remote_size} = {elapsed:.2f} seconds")
         return True
     except (requests.RequestException, ValueError):
+        if raise_on_error:
+            raise
         return False
 
 
-def save_unzip(zip_url: str, extract_path: str = "", delete_after: bool = False) -> str:
+def save_unzip(
+    zip_url: str,
+    extract_path: str = "",
+    delete_after: bool = False,
+    raise_on_error: bool = True,
+) -> str:
     """
     Save and extract a remote zip archive.
 
     :param zip_url: URL of the zip file to download.
     :param extract_path: Path to extract the zip file; defaults to the caller directory.
     :param delete_after: Delete the downloaded zip file after extraction.
-    :return: The extraction path or an empty string on failure.
+    :param raise_on_error: If ``True`` re-raises download or extraction errors;
+        otherwise returns an empty string on failure.
+    :return: The extraction path or an empty string on failure when
+        ``raise_on_error`` is ``False``.
     """
 
     try:
         namespace = sys._getframe(1).f_globals if sys._getframe(1) else None
         base_path = _get_caller_dir(namespace)
-        zip_path = save(zip_url, overwrite=True)
+        zip_path = save(zip_url, overwrite=True, raise_on_error=raise_on_error)
         if not zip_path:
             return ""
 
@@ -420,26 +506,37 @@ def save_unzip(zip_url: str, extract_path: str = "", delete_after: bool = False)
             os.remove(zip_path)
         return destination
     except (zipfile.BadZipFile, OSError, ValueError):
+        if raise_on_error:
+            raise
         return ""
 
 
-def git_clone(git_url: str, clone_dir: str = "") -> str:
+def git_clone(
+    git_url: str,
+    clone_dir: str = "",
+    raise_on_error: bool = True,
+) -> str:
     """
     Clone a git repository by downloading its default branch zip archive.
 
     :param git_url: Git URL, e.g. ``https://github.com/x011/dload.git``.
     :param clone_dir: Local directory to extract into; defaults to the caller directory
         plus the repository name.
-    :return: Path to the local repository directory or an empty string on failure.
+    :param raise_on_error: If ``True`` re-raises download or extraction errors;
+        otherwise returns an empty string on failure.
+    :return: Path to the local repository directory or an empty string on failure when
+        ``raise_on_error`` is ``False``.
     """
 
     git_url = git_url.strip()
     if not git_url.lower().endswith(".git"):
+        if raise_on_error:
+            raise ValueError("git_url must end with .git")
         return ""
 
     try:
         repo_name = re.sub(r"\.git$", "", git_url, 0, re.IGNORECASE | re.MULTILINE)
-        default_branch = _github_default_branch(repo_name) or "master"
+        default_branch = _github_default_branch(repo_name, raise_on_error=raise_on_error) or "master"
         repo_zip = f"{repo_name}/archive/refs/heads/{default_branch}.zip"
         archive_filename = os.path.basename(urlparse(repo_zip).path)
 
@@ -455,12 +552,18 @@ def git_clone(git_url: str, clone_dir: str = "") -> str:
         if archive_filename and os.path.isfile(archive_filename):
             os.remove(archive_filename)
 
-        return save_unzip(repo_zip, clone_dir, delete_after=True)
+        return save_unzip(
+            repo_zip, clone_dir, delete_after=True, raise_on_error=raise_on_error
+        )
     except (OSError, ValueError):
+        if raise_on_error:
+            raise
         return ""
 
 
-def _github_default_branch(repo_name: str) -> Optional[str]:
+def _github_default_branch(
+    repo_name: str, raise_on_error: bool = True
+) -> Optional[str]:
     """Return the default branch name for a GitHub repository when possible."""
 
     parsed_url = urlparse(repo_name)
@@ -483,6 +586,8 @@ def _github_default_branch(repo_name: str) -> Optional[str]:
             if isinstance(default_branch, str) and default_branch.strip():
                 return default_branch.strip()
     except requests.RequestException:
+        if raise_on_error:
+            raise
         return None
 
     return None
