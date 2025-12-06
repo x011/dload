@@ -1,12 +1,16 @@
-"""Manual script to exercise dload helpers with real URLs.
+"""
+Manual check script for dload helpers.
 
-Run locally to verify that downloads work end-to-end without modifying the
-library. Each step reports success and stops immediately on the first error.
+- Verifies each helper with the provided URLs.
+- Stops on first error; otherwise prints concise success info.
+- Adds a simple download speed measurement and a concurrent multi-download demo.
 """
 
 import os
 import tempfile
-from typing import Any
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Iterable, Tuple
 
 import dload
 
@@ -23,7 +27,7 @@ def _run_step(step: str, func):
     print(f"[{step}] starting...")
     try:
         result = func()
-    except Exception as exc:  # pragma: no cover - manual script
+    except Exception as exc:
         _log_error(step, exc)
         raise
     _log_success(step, result)
@@ -39,14 +43,40 @@ def _describe_json(payload: Any) -> str:
     return f"{type(payload).__name__}: {payload!r}"
 
 
+def _download_and_time(url: str, target: str) -> Tuple[str, float]:
+    start = time.perf_counter()
+    dload.save(url, target, overwrite=True)
+    elapsed = time.perf_counter() - start
+    return target, elapsed
+
+
+def _download_many(urls: Iterable[str], dest_dir: str, max_threads: int = 5) -> None:
+    os.makedirs(dest_dir, exist_ok=True)
+    print(f"[save_multi] downloading {len(list(urls))} files with {max_threads} threads...")
+    urls = list(urls)
+    with ThreadPoolExecutor(max_workers=max_threads) as pool:
+        futures = {
+            pool.submit(_download_and_time, url, os.path.join(dest_dir, os.path.basename(url))): url
+            for url in urls
+        }
+        for future in as_completed(futures):
+            url = futures[future]
+            try:
+                path, elapsed = future.result()
+                _log_success("save_multi", f"{url} -> {path} ({elapsed:.2f}s)")
+            except Exception as exc:
+                _log_error(f"save_multi {url}", exc)
+                raise
+
+
 def main() -> None:
     tmp_dir = tempfile.gettempdir()
 
     _run_step(
         "save",
         lambda: dload.save(
-            "https://examplefiles.org/files/images/jpg-example-file-download-2048x2048.jpg",
-            os.path.join(tmp_dir, "jpg-example-file-download-2048x2048.jpg"),
+            "https://example-files.online-convert.com/raster%20image/jpg/example.jpg",
+            os.path.join(tmp_dir, "example.jpg"),
             overwrite=True,
         ),
     )
@@ -68,15 +98,13 @@ def main() -> None:
 
     json_payload = _run_step(
         "json",
-        lambda: dload.json("https://microsoftedge.github.io/Demos/json-dummy-data/256KB.json"),
+        lambda: dload.json("https://example-files.online-convert.com/filelist.json"),
     )
     _log_success("json detail", _describe_json(json_payload))
 
     headers = _run_step(
         "headers",
-        lambda: dload.headers(
-            "https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json"
-        ),
+        lambda: dload.headers("https://example-files.online-convert.com/filelist.json"),
     )
     _log_success("Content-Type", headers.get("Content-Type", "<missing>"))
 
@@ -89,14 +117,37 @@ def main() -> None:
     unzip_dir = _run_step(
         "save_unzip",
         lambda: dload.save_unzip(
-            "https://file-examples.com/wp-content/uploads/2017/02/zip_2MB.zip",
+            "https://example-files.online-convert.com/archive/zip/example.zip",
             delete_after=True,
         ),
     )
     _log_success("save_unzip dir", unzip_dir)
 
+    # Simple speed check: download a mid-size file and report duration
+    target, elapsed = _download_and_time(
+        "https://ftp.mozilla.org/pub/firefox/releases/1.0.6/win32/cs-CZ/Firefox%20Setup%201.0.6.exe",
+        os.path.join(tmp_dir, "Firefox%20Setup%201.0.6.exe"),
+    )
+    _log_success("speed_test", f"{target} downloaded in {elapsed:.2f}s")
+
+    # Multi-download example with concurrency
+    file_list = [
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-i386-pc-solaris2.8.tar.gz",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-i386-unknown-netbsdelf1.6.tar.bz2",
+        "https://ftp.mozilla.org/pub/firefox/releases/1.0.6/linux-i686/da-DK/firefox-1.0.6.tar.gz",
+        "https://ftp.mozilla.org/pub/firefox/releases/1.0.6/linux-i686/da-DK/firefox-1.0.6.installer.tar.gz",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-i686-pc-linux-gnu-ctl-svg.tar.gz",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-0.8-sparc-sun-solaris2.8-gtk2.tar.gz",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/contrib/firefox-os2-0.8.zip",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/FirefoxSetup-0.8.exe",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/Firefox-0.8.zip",
+        "https://ftp.mozilla.org/pub/firefox/releases/0.8/firefox-source-0.8.tar.bz2",
+        "https://ftp.mozilla.org/pub/firefox/releases/1.0.6/win32/cs-CZ/Firefox%20Setup%201.0.6.exe",
+    ]
+    _download_many(file_list, os.path.join(tmp_dir, "dload-multi"), max_threads=10)
+
     _run_step("git_clone", lambda: dload.git_clone("https://github.com/x011/dload.git"))
 
 
-if __name__ == "__main__":  # pragma: no cover - manual script
+if __name__ == "__main__":
     main()
