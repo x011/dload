@@ -69,6 +69,14 @@ def _download_many(urls: Iterable[str], dest_dir: str, max_threads: int = 5) -> 
                 raise
 
 
+def _down_speed_summary(size: int = 5, ipv: str = "ipv4", port: int = 80) -> str:
+    start = time.perf_counter()
+    result = dload.down_speed(size=size, ipv=ipv, port=port)
+    elapsed = time.perf_counter() - start
+    status = "completed" if result else "did not complete"
+    return f"{size}MB over {ipv}:{port} {status} in {elapsed:.2f}s"
+
+
 def main() -> None:
     tmp_dir = tempfile.gettempdir()
 
@@ -123,7 +131,7 @@ def main() -> None:
     )
     _log_success("save_unzip dir", unzip_dir)
 
-    _run_step("down_speed", lambda: dload.down_speed())
+    _run_step("down_speed", _down_speed_summary)
 
     # Simple speed check: download a mid-size file and report duration
     target, elapsed = _download_and_time(
